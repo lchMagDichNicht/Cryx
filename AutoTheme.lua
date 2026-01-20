@@ -1,4 +1,4 @@
-local folderPath = "HelloKittyWare/themes"
+local folderPath = "Cryx/themes"
 local jsonFileName = "Cryx.json"
 local txtFileName = "Default.txt"
 
