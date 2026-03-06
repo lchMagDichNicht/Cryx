@@ -26,7 +26,7 @@ local Tabs = {
 }
 
 
-local InfoGroupLeft = Tabs.Info:AddLeftGroupbox("Key Info","key")
+local InfoGroup = Tabs.Info:AddLeftGroupbox("Key Info","key")
 local InfoGroupRight = Tabs.Info:AddRightGroupbox("Home","house")
 
 -- Player Info
@@ -62,9 +62,9 @@ local keyType = data.type or "No Key"
 local expiresAt = data.expiresAt
 
 -- 🏷️ LABELS
-local KeyLabel = InfoGroupLeft:AddLabel("Key: " .. shortKey, false)
-local TypeLabel = InfoGroupLeft:AddLabel("Type: " .. keyType, false)
-local TimeLabel = InfoGroupLeft:AddLabel("Expires: Loading...", false)
+local KeyLabel = InfoGroup:AddLabel("Key: " .. shortKey, false)
+local TypeLabel = InfoGroup:AddLabel("Type: " .. keyType, false)
+local TimeLabel = InfoGroup:AddLabel("Expires: Loading...", false)
 
 -- ⏳ format function
 local function formatTime(seconds)
