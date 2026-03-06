@@ -6,9 +6,6 @@ local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
 local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
 local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
 
--- GET DATA FROM LOADER
-local KEY = _G.KEY or "NO KEY"
-local data = _G.data or {}
 
 local Window = Library:CreateWindow({
     Title = 'Cryx',
@@ -28,24 +25,49 @@ local Tabs = {
 	Settings = Window:AddTab("UI Settings", "settings"),
 }
 
-local InfoGroup = Tabs.Info:AddLeftGroupbox("Key Info","key")
 
--- shorten key
+local InfoGroupLeft = Tabs.Info:AddLeftGroupbox("Key Info","key")
+local InfoGroupRight = Tabs.Info:AddRightGroupbox("Home","house")
+
+-- Player Info
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local imageUrl = Players:GetUserThumbnailAsync(
+    player.UserId,
+    Enum.ThumbnailType.HeadShot,
+    Enum.ThumbnailSize.Size420x420
+)
+
+InfoGroupRight:AddImage("MyImage", {
+    Image = imageUrl,
+    Height = 200,
+})
+
+InfoGroupRight:AddLabel("Good afternoon "..player.DisplayName, false)
+InfoGroupRight:AddLabel("Welcome back to Cryx!", true)
+
+-- 🔐 FALLBACKS (WICHTIG)
+KEY = KEY or "NO KEY"
+data = data or {}
+
+-- 🔑 shorten key
 local shortKey = KEY
 if type(KEY) == "string" and #KEY > 12 then
     shortKey = string.sub(KEY, 1, 10) .. "#####"
 end
 
+-- 📦 type & expire (safe)
 local keyType = data.type or "No Key"
 local expiresAt = data.expiresAt
 
-local KeyLabel = InfoGroup:AddLabel("Key: " .. shortKey, false)
-local TypeLabel = InfoGroup:AddLabel("Type: " .. keyType, false)
-local TimeLabel = InfoGroup:AddLabel("Expires: Loading...", false)
+-- 🏷️ LABELS
+local KeyLabel = InfoGroupLeft:AddLabel("Key: " .. shortKey, false)
+local TypeLabel = InfoGroupLeft:AddLabel("Type: " .. keyType, false)
+local TimeLabel = InfoGroupLeft:AddLabel("Expires: Loading...", false)
 
--- FORMAT TIME
+-- ⏳ format function
 local function formatTime(seconds)
-
     local d = math.floor(seconds / 86400)
     local h = math.floor((seconds % 86400) / 3600)
     local m = math.floor((seconds % 3600) / 60)
@@ -54,27 +76,21 @@ local function formatTime(seconds)
     if d > 0 then
         return string.format("%dd %02dh %02dm", d, h, m)
     else
-        return string.format("%02dh %02dm %02ds", h, m, s)
+        return string.format("%dh %02dm %02ds", h, m, s)
     end
-
 end
 
--- TIME LOGIC
+-- 🔥 LOGIC (SAFE)
 if keyType == "lifetime" then
-
     TimeLabel:SetText("Expires: Never")
 
 elseif not expiresAt then
-
     TimeLabel:SetText("Expires: No Data")
 
 else
-
     task.spawn(function()
-
         while true do
-
-            local now = os.time() * 1000
+            local now = DateTime.now().UnixTimestampMillis
             local left = math.floor((expiresAt - now) / 1000)
 
             if left <= 0 then
@@ -83,19 +99,15 @@ else
             end
 
             TimeLabel:SetText("Expires: " .. formatTime(left))
-
             task.wait(1)
-
         end
-
     end)
-
 end
 
--- MAIN TAB
+
 local MainGroupLeft = Tabs.Main:AddLeftGroupbox("Main","globe")
 
--- SETTINGS TAB
+
 local SettingsGroupLeft = Tabs.Settings:AddLeftGroupbox('UI', 'app-window')
 
 SettingsGroupLeft:AddToggle("KeybindMenuOpen", {
@@ -108,71 +120,78 @@ SettingsGroupLeft:AddToggle("KeybindMenuOpen", {
 
 local Options = Library.Options
 local Toggles = Library.Toggles
+ 
+-- Watermark Toggle
 
--- Watermark
-local MyToggle = SettingsGroupLeft:AddToggle("WatermarkToggle", {
+local MyToggle = SettingsGroupLeft:AddToggle("MyToggle", {
     Text = "Watermark",
     Default = true,
 })
-
-Toggles.WatermarkToggle:OnChanged(function(state)
-    if DraggableLabel then
-        DraggableLabel:SetVisible(state)
-    end
+ 
+Toggles.MyToggle:OnChanged(function(state)
+    DraggableLabel:SetVisible(state)
 end)
 
--- Custom Cursor
-local CursorToggle = SettingsGroupLeft:AddToggle("CursorToggle", {
+local Options = Library.Options
+local Toggles = Library.Toggles
+
+-- Custom Cursor Toggle
+
+local MyToggle = SettingsGroupLeft:AddToggle("MyToggle", {
     Text = "Custom Cursor",
     Default = false,
 })
 
-Toggles.CursorToggle:OnChanged(function(state)
+Toggles.MyToggle:OnChanged(function(state)
     Library.ShowCustomCursor = state
 end)
 
 SettingsGroupLeft:AddDivider()
 
--- DPI
+-- Dpi Dropdown
+
 SettingsGroupLeft:AddDropdown("DPIDropdown", {
 	Values = { "50%", "75%", "100%", "125%", "150%", "175%", "200%" },
 	Default = "100%",
+
 	Text = "DPI Scale",
 
 	Callback = function(Value)
-
 		Value = Value:gsub("%%", "")
 		local DPI = tonumber(Value)
 
 		Library:SetDPIScale(DPI)
-
 	end,
 })
 
+
+
+-- Unload
 SettingsGroupLeft:AddDivider()
+
 
 SettingsGroupLeft:AddLabel("Menu bind")
 	:AddKeyPicker("MenuKeybind", { Default = "RightControl", NoUI = true, Text = "Menu keybind" })
+
 
 SettingsGroupLeft:AddButton('Unload', function()
     Library:Unload()
 end)
 
+
 Library.ToggleKeybind = Options.MenuKeybind 
 
--- SAVE + THEME
+
+-- ================================
+-- SaveManager & ThemeManager
+-- ================================
 ThemeManager:SetLibrary(Library)
 SaveManager:SetLibrary(Library)
-
 SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({"MenuKeybind"})
-
 ThemeManager:SetFolder("Cryx")
 SaveManager:SetFolder("Cryx/Example")
 SaveManager:SetSubFolder("")
-
 SaveManager:BuildConfigSection(Tabs.Settings)
-
 ThemeManager:ApplyToTab(Tabs.Settings)
-
 SaveManager:LoadAutoloadConfig("")
