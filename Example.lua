@@ -26,26 +26,9 @@ local Tabs = {
 }
 
 
-local InfoGroup = Tabs.Info:AddLeftGroupbox("Key Info","key")
+local InfoGroupLeft = Tabs.Info:AddLeftGroupbox("Key Info","key")
 local InfoGroupRight = Tabs.Info:AddRightGroupbox("Home","house")
 
--- Player Info
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-local imageUrl = Players:GetUserThumbnailAsync(
-    player.UserId,
-    Enum.ThumbnailType.HeadShot,
-    Enum.ThumbnailSize.Size420x420
-)
-
-InfoGroupRight:AddImage("MyImage", {
-    Image = imageUrl,
-    Height = 200,
-})
-
-InfoGroupRight:AddLabel("Good afternoon "..player.DisplayName, false)
-InfoGroupRight:AddLabel("Welcome back to Cryx!", true)
 
 -- 🔐 FALLBACKS (WICHTIG)
 KEY = KEY or "NO KEY"
@@ -62,9 +45,9 @@ local keyType = data.type or "No Key"
 local expiresAt = data.expiresAt
 
 -- 🏷️ LABELS
-local KeyLabel = InfoGroup:AddLabel("Key: " .. shortKey, false)
-local TypeLabel = InfoGroup:AddLabel("Type: " .. keyType, false)
-local TimeLabel = InfoGroup:AddLabel("Expires: Loading...", false)
+local KeyLabel = InfoGroupLeft:AddLabel("Key: " .. shortKey, false)
+local TypeLabel = InfoGroupLeft:AddLabel("Type: " .. keyType, false)
+local TimeLabel = InfoGroupLeft:AddLabel("Expires: Loading...", false)
 
 -- ⏳ format function
 local function formatTime(seconds)
@@ -103,6 +86,24 @@ else
         end
     end)
 end
+
+-- Player Info
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local imageUrl = Players:GetUserThumbnailAsync(
+    player.UserId,
+    Enum.ThumbnailType.HeadShot,
+    Enum.ThumbnailSize.Size420x420
+)
+
+InfoGroupRight:AddImage("MyImage", {
+    Image = imageUrl,
+    Height = 200,
+})
+
+InfoGroupRight:AddLabel("Good afternoon "..player.DisplayName, false)
+InfoGroupRight:AddLabel("Welcome back to Cryx!", true)
 
 
 local MainGroupLeft = Tabs.Main:AddLeftGroupbox("Main","globe")
